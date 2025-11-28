@@ -177,7 +177,7 @@ if option == "Upload Gambar":
             <div style="
                 border:3px solid black;
                 padding:10px;
-                height:430px;
+                height:10px;
                 display:flex;
                 align-items:center;
                 justify-content:center;
