@@ -8,8 +8,6 @@ from supervision import BoxAnnotator, LabelAnnotator, Color, Detections
 from io import BytesIO
 import base64
 import tempfile
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
-import av
 
 # -----------------------------
 # Konversi gambar ke base64
@@ -29,7 +27,7 @@ st.set_page_config(page_title="Deteksi Buah Sawit", layout="wide")
 # -----------------------------
 @st.cache_resource
 def load_model():
-    return YOLO("best.pt")  # Ganti path model sesuai kebutuhan
+    return YOLO("best.pt")  # ganti sesuai model
 
 model = load_model()
 
@@ -44,7 +42,7 @@ label_to_color = {
 label_annotator = LabelAnnotator()
 
 # -----------------------------
-# Fungsi anotasi deteksi
+# Fungsi anotasi deteksi (ANTI ERROR)
 # -----------------------------
 def draw_results(image, results):
     img = np.array(image.convert("RGB"))
@@ -52,13 +50,21 @@ def draw_results(image, results):
 
     for result in results:
         boxes = result.boxes
-        names = result.names
+        names = result.names  # mapping id → label
 
         xyxy = boxes.xyxy.cpu().numpy()
         class_ids = boxes.cls.cpu().numpy().astype(int)
         confidences = boxes.conf.cpu().numpy()
 
         for box, class_id, conf in zip(xyxy, class_ids, confidences):
+
+            # -----------------------
+            # FIX YOLOv12 → cegah KeyError
+            # -----------------------
+            if class_id not in names:
+                print(f"[WARNING] Unknown class id: {class_id}")
+                continue
+
             class_name = names[class_id]
             label = f"{class_name}: {conf:.2f}"
             color = label_to_color.get(class_name, Color.WHITE)
@@ -66,6 +72,7 @@ def draw_results(image, results):
             class_counts[class_name] += 1
 
             box_annotator = BoxAnnotator(color=color)
+
             detection = Detections(
                 xyxy=np.array([box]),
                 confidence=np.array([conf]),
@@ -81,12 +88,10 @@ def draw_results(image, results):
 # Sidebar
 # -----------------------------
 with st.sidebar:
-    st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
     st.image("logo-saraswanti.png", width=150)
-    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<h4 style='margin-bottom: 5px;'>Pilih metode input:</h4>", unsafe_allow_html=True)
-    option = st.radio("", ["Upload Gambar", "Gunakan Kamera (Foto)", "Upload Video", "Kamera Live"], label_visibility="collapsed")
+    st.markdown("<h4>Pilih metode input:</h4>", unsafe_allow_html=True)
+    option = st.radio("", ["Upload Gambar", "Upload Video"], label_visibility="collapsed")
 
     # Created by section
     profile_img = Image.open("foto1.jpg")
@@ -99,7 +104,6 @@ with st.sidebar:
                 justify-content: center;
                 gap: 10px;
                 margin-top: 15px;
-                margin-bottom: 30px;
             }}
             .created-by-img {{
                 width: 40px;
@@ -112,35 +116,31 @@ with st.sidebar:
                 font-size: 14px;
                 color: #555;
                 font-style: italic;
-                user-select: none;
             }}
         </style>
         <div class="created-by-container">
-            <img class="created-by-img" src="data:image/png;base64,{image_to_base64(profile_img)}" alt="Profil" />
+            <img class="created-by-img" src="data:image/png;base64,{image_to_base64(profile_img)}" />
             <div class="created-by-text">Created by : hawa tercipta di dunia</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-# -----------------------------
-# Judul & Deskripsi
-# -----------------------------
-st.markdown("<h1 style='text-align:center;'>🌴 Deteksi Kematangan Buah Sawit</h1>", unsafe_allow_html=True)
-st.markdown("""
-<div style="text-align:center; font-size:16px; max-width:800px; margin:auto;">
-    Sistem ini menggunakan teknologi YOLOv12 untuk mendeteksi kematangan buah kelapa sawit 
-    secara otomatis berdasarkan gambar atau video input. 
-</div>
-""", unsafe_allow_html=True)
 
 # -----------------------------
-# Mode Upload Gambar
+# Judul halaman
 # -----------------------------
+st.markdown("<h1 style='text-align:center;'>🌴 Deteksi Kematangan Buah Sawit</h1>", unsafe_allow_html=True)
+
+
+# ==========================================================
+# 🔹 MODE 1 — UPLOAD GAMBAR
+# ==========================================================
 if option == "Upload Gambar":
     uploaded_file = st.file_uploader("Unggah Gambar", type=["jpg", "jpeg", "png"])
     if uploaded_file:
         image = Image.open(uploaded_file)
+
         with st.spinner("🔍 Memproses gambar..."):
             results = model(image)
             result_img, class_counts = draw_results(image, results)
@@ -155,49 +155,41 @@ if option == "Upload Gambar":
 
         buffered = BytesIO()
         result_img.save(buffered, format="PNG")
-        st.download_button("⬇️ Download Gambar Hasil Deteksi", buffered.getvalue(), "hasil_deteksi.png", "image/png")
+        st.download_button("⬇️ Download Hasil", buffered.getvalue(), "hasil_deteksi.png", "image/png")
 
-# -----------------------------
-# Mode Kamera Foto
-# -----------------------------
-elif option == "Gunakan Kamera (Foto)":
-    camera_photo = st.camera_input("Ambil Foto")
-    if camera_photo:
-        image = Image.open(camera_photo)
-        with st.spinner("🔍 Memproses gambar..."):
-            results = model(image)
-            result_img, class_counts = draw_results(image, results)
 
-        col1, col2 = st.columns(2)
-        col1.image(image, caption="Gambar Input", use_container_width=True)
-        col2.image(result_img, caption="Hasil Deteksi", use_container_width=True)
-
-        st.subheader("Jumlah Objek Terdeteksi:")
-        for name, count in class_counts.items():
-            st.write(f"- **{name}**: {count}")
-
-# -----------------------------
-# Mode Upload Video
-# -----------------------------
+# ==========================================================
+# 🔹 MODE 2 — UPLOAD VIDEO
+# ==========================================================
 elif option == "Upload Video":
     uploaded_video = st.file_uploader("Unggah Video", type=["mp4", "avi", "mov"])
     if uploaded_video:
+
         tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.write(uploaded_video.read())
 
         cap = cv2.VideoCapture(tfile.name)
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        out = cv2.VideoWriter('output.mp4', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
+        out = cv2.VideoWriter('output.mp4', fourcc, 20.0, 
+                              (int(cap.get(3)), int(cap.get(4))))
 
         stframe = st.empty()
+
         with st.spinner("🔍 Memproses video..."):
             while cap.isOpened():
                 ret, frame = cap.read()
                 if not ret:
                     break
+
                 results = model(frame)
-                annotated_frame, _ = draw_results(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)), results)
+
+                annotated_frame, _ = draw_results(
+                    Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
+                    results
+                )
+
                 frame_bgr = cv2.cvtColor(np.array(annotated_frame), cv2.COLOR_RGB2BGR)
+
                 out.write(frame_bgr)
                 stframe.image(frame_bgr, channels="BGR", use_container_width=True)
 
@@ -205,21 +197,4 @@ elif option == "Upload Video":
         out.release()
 
         with open("output.mp4", "rb") as f:
-            st.download_button("⬇️ Download Video Hasil Deteksi", f, file_name="hasil_deteksi.mp4")
-
-# -----------------------------
-# Mode Kamera Live
-# -----------------------------
-elif option == "Kamera Live":
-    class YOLOVideoTransformer(VideoTransformerBase):
-        def transform(self, frame):
-            img = frame.to_ndarray(format="bgr24")
-            results = model(img)
-            annotated_frame, _ = draw_results(Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)), results)
-            return cv2.cvtColor(np.array(annotated_frame), cv2.COLOR_RGB2BGR)
-
-    webrtc_streamer(
-        key="yolo-live",
-        video_transformer_factory=YOLOVideoTransformer,
-        media_stream_constraints={"video": True, "audio": False}
-    )
+            st.download_button("⬇️ Download Video Hasil Deteksi", f, "hasil_deteksi.mp4")
