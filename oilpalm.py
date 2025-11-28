@@ -282,6 +282,11 @@ if option == "Upload Gambar":
                     </div>
                     """,
                     unsafe_allow_html=True
+
+                    <div style="margin-bottom: 10px;">Mentah : {mentah}</div>
+                    <div style="margin-bottom: 10px;">Mengkal : {mengkal}</div>
+                    <div>Matang : {matang}</div>
+
                 )
 
 
