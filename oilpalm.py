@@ -57,7 +57,7 @@ def draw_results(image, results):
         confidences = boxes.conf.cpu().numpy()
 
         # ===== DEBUG: tampilkan nama label dari YOLO =====
-        st.write("DEBUG LABEL YOLO:", [names[c] for c in class_ids])
+        # st.write("DEBUG LABEL YOLO:", [names[c] for c in class_ids])
 
         for box, class_id, conf in zip(xyxy, class_ids, confidences):
 
