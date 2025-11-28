@@ -35,14 +35,14 @@ model = load_model()
 # Warna label
 # =============================
 label_to_color = {
-    "Matang": Color.RED,
-    "Mengkal": Color.YELLOW,
-    "Mentah": Color.BLACK
+    "matang": Color.RED,
+    "mengkal": Color.YELLOW,
+    "mentah": Color.BLACK
 }
 label_annotator = LabelAnnotator()
 
 # =============================
-# Fungsi anotasi YOLO
+# Fungsi anotasi YOLO (SUDAH DIPERBAIKI)
 # =============================
 def draw_results(image, results):
     img = np.array(image.convert("RGB"))
@@ -56,15 +56,20 @@ def draw_results(image, results):
         class_ids = boxes.cls.cpu().numpy().astype(int)
         confidences = boxes.conf.cpu().numpy()
 
+        # ===== DEBUG: tampilkan nama label dari YOLO =====
+        st.write("DEBUG LABEL YOLO:", [names[c] for c in class_ids])
+
         for box, class_id, conf in zip(xyxy, class_ids, confidences):
 
             if class_id not in names:
                 continue
 
-            class_name = names[class_id]
+            class_name = names[class_id].strip().lower()   # NORMALISASI
             label = f"{class_name}: {conf:.2f}"
+
             color = label_to_color.get(class_name, Color.WHITE)
-            class_counts[class_name] += 1
+
+            class_counts[class_name] += 1  # pakai lowercase
 
             box_annotator = BoxAnnotator(color=color)
 
@@ -78,6 +83,7 @@ def draw_results(image, results):
             img = label_annotator.annotate(scene=img, detections=detection, labels=[label])
 
     return Image.fromarray(img), class_counts
+
 
 # =============================
 # Fungsi crop foto profil
@@ -221,11 +227,12 @@ if option == "Upload Gambar":
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ==================== REKAP DETEKSI ======================
+        # ==================== REKAP DETEKSI (SUDAH DIBENERKAN) ======================
         total = sum(class_counts.values())
-        mentah = class_counts.get("Mentah", 0)
-        mengkal = class_counts.get("Mengkal", 0)
-        matang = class_counts.get("Matang", 0)
+
+        mentah = class_counts.get("mentah", 0)
+        mengkal = class_counts.get("mengkal", 0)
+        matang = class_counts.get("matang", 0)
 
         st.markdown("""
         <div style="
@@ -266,7 +273,7 @@ if option == "Upload Gambar":
 
             st.write(f"Mentah  : {mentah}")
             st.write(f"Mengkal : {mengkal}")
-            st.write(f"Matang   : {matang}")
+            st.write(f"Matang  : {matang}")
 
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -302,4 +309,3 @@ elif option == "Upload Video":
 
         cap.release()
         st.success("Video selesai diproses.")
-
