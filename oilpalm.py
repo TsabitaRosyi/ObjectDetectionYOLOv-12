@@ -93,38 +93,53 @@ with st.sidebar:
     st.markdown("<h4>Pilih metode input:</h4>", unsafe_allow_html=True)
     option = st.radio("", ["Upload Gambar", "Upload Video"], label_visibility="collapsed")
 
-    # Created by section
-    profile_img = Image.open("foto.jpg")
-    st.markdown(
-        f"""
-        <style>
-            .created-by-container {{
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                margin-top: 15px;
-            }}
-            .created-by-img {{
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                border: 2px solid #444;
-                object-fit: cover;
-            }}
-            .created-by-text {{
-                font-size: 14px;
-                color: #555;
-                font-style: italic;
-            }}
-        </style>
-        <div class="created-by-container">
-            <img class="created-by-img" src="data:image/png;base64,{image_to_base64(profile_img)}" />
-            <div class="created-by-text">Created by : Tsabit</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+# -----------------------------
+# Fungsi crop foto jadi square
+# -----------------------------
+def crop_center_square(img):
+    width, height = img.size
+    min_dim = min(width, height)
+    left = (width - min_dim) / 2
+    top = (height - min_dim) / 2
+    right = (width + min_dim) / 2
+    bottom = (height + min_dim) / 2
+    return img.crop((left, top, right, bottom))
+
+
+# Created by section
+profile_img = Image.open("foto.jpg")
+profile_img = crop_center_square(profile_img)
+
+st.markdown(
+    f"""
+    <style>
+        .created-by-container {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }}
+        .created-by-img {{
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #444;
+            object-fit: cover;
+        }}
+        .created-by-text {{
+            font-size: 14px;
+            color: #555;
+            font-style: italic;
+        }}
+    </style>
+    <div class="created-by-container">
+        <img class="created-by-img" src="data:image/png;base64,{image_to_base64(profile_img)}" />
+        <div class="created-by-text">Created by : Tsabit</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 # -----------------------------
