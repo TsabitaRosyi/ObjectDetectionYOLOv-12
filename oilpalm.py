@@ -244,6 +244,7 @@ if option == "Upload Gambar":
 
         colA, colB = st.columns([1,2])
 
+        # ================== KOLOM KIRI (TOTAL) ==================
         with colA:
             st.markdown("""
             <div style="
@@ -251,33 +252,34 @@ if option == "Upload Gambar":
                 border-radius:20px;
                 padding:10px;
                 text-align:center;
-                font-weight:bold;">
+                font-weight:bold;
+                font-size:20px;">
                 Jumlah Total Deteksi
             </div>
             """, unsafe_allow_html=True)
-
+        
             st.markdown(
-                f"<h1 style='text-align:center; font-size:60px; margin-top:10px;'>{total}</h1>",
+                f"<h1 style='text-align:center; font-size:60px; margin-top:10px; color:#333;'>{total}</h1>",
                 unsafe_allow_html=True,
             )
 
+        # ================== KOLOM KANAN (MENTAH-MENGKAL-MATANG) ==================
         with colB:
             st.markdown("""
             <div style="
                 border:3px solid black;
                 border-radius:20px;
-                padding:15px;
+                padding:20px;
                 font-size:22px;
-                font-weight:bold;">
+                font-weight:bold;
+                color:#333;">
+                
+                <p style="margin: 0 0 10px 0;">Mentah : """ + str(mentah) + """</p>
+                <p style="margin: 0 0 10px 0;">Mengkal : """ + str(mengkal) + """</p>
+                <p style="margin: 0;">Matang : """ + str(matang) + """</p>
+        
+            </div>
             """, unsafe_allow_html=True)
-
-            st.write(f"Mentah  : {mentah}")
-            st.write(f"Mengkal : {mengkal}")
-            st.write(f"Matang  : {matang}")
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ==========================================================
