@@ -35,14 +35,14 @@ model = load_model()
 # Warna label
 # =============================
 label_to_color = {
-    "matang": Color.RED,
-    "mengkal": Color.YELLOW,
-    "mentah": Color.BLACK
+    "Matang": Color.RED,
+    "Mengkal": Color.YELLOW,
+    "Mentah": Color.BLACK
 }
 label_annotator = LabelAnnotator()
 
 # =============================
-# Fungsi anotasi YOLO (SUDAH DIPERBAIKI)
+# Fungsi anotasi YOLO
 # =============================
 def draw_results(image, results):
     img = np.array(image.convert("RGB"))
@@ -56,20 +56,15 @@ def draw_results(image, results):
         class_ids = boxes.cls.cpu().numpy().astype(int)
         confidences = boxes.conf.cpu().numpy()
 
-        # ===== DEBUG: tampilkan nama label dari YOLO =====
-        # st.write("DEBUG LABEL YOLO:", [names[c] for c in class_ids])
-
         for box, class_id, conf in zip(xyxy, class_ids, confidences):
 
             if class_id not in names:
                 continue
 
-            class_name = names[class_id].strip().lower()   # NORMALISASI
+            class_name = names[class_id]
             label = f"{class_name}: {conf:.2f}"
-
             color = label_to_color.get(class_name, Color.WHITE)
-
-            class_counts[class_name] += 1  # pakai lowercase
+            class_counts[class_name] += 1
 
             box_annotator = BoxAnnotator(color=color)
 
@@ -83,7 +78,6 @@ def draw_results(image, results):
             img = label_annotator.annotate(scene=img, detections=detection, labels=[label])
 
     return Image.fromarray(img), class_counts
-
 
 # =============================
 # Fungsi crop foto profil
@@ -227,24 +221,22 @@ if option == "Upload Gambar":
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ==================== REKAP DETEKSI (SUDAH DIBENERKAN) ======================
+        # ==================== REKAP DETEKSI ======================
         total = sum(class_counts.values())
+        mentah = class_counts.get("Mentah", 0)
+        mengkal = class_counts.get("Mengkal", 0)
+        matang = class_counts.get("Matang", 0)
 
-        mentah = class_counts.get("mentah", 0)
-        mengkal = class_counts.get("mengkal", 0)
-        matang = class_counts.get("matang", 0)
-
-        # st.markdown("""
-        # <div style="
-        #     margin-top: 20px;
-        #     border:3px solid black;
-        #     border-radius:20px;
-        #     padding:20px;">
-        # """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="
+            margin-top: 20px;
+            border:3px solid black;
+            border-radius:20px;
+            padding:20px;">
+        """, unsafe_allow_html=True)
 
         colA, colB = st.columns([1,2])
 
-        # ================== KOLOM KIRI (TOTAL) ==================
         with colA:
             st.markdown("""
             <div style="
@@ -252,37 +244,35 @@ if option == "Upload Gambar":
                 border-radius:20px;
                 padding:10px;
                 text-align:center;
-                font-weight:bold;
-                font-size:20px;">
+                font-weight:bold;">
                 Jumlah Total Deteksi
             </div>
             """, unsafe_allow_html=True)
-        
+
             st.markdown(
-                f"<h1 style='text-align:center; font-size:60px; margin-top:10px; color:#333;'>{total}</h1>",
+                f"<h1 style='text-align:center; font-size:60px; margin-top:10px;'>{total}</h1>",
                 unsafe_allow_html=True,
             )
 
-        # ================== KOLOM KANAN (MENTAH-MENGKAL-MATANG) ==================
-          with colB:
-            st.markdown(
-                f"""
-                <div style="
-                    border:3px solid black;
-                    border-radius:20px;
-                    padding:20px;
-                    font-size:22px;
-                    font-weight:bold;
-                    color:#333;
-                    line-height: 1.5;
-                ">
-                    <div style="margin-bottom: 10px;">Mentah : {mentah}</div>
-                    <div style="margin-bottom: 10px;">Mengkal : {mengkal}</div>
-                    <div>Matang : {matang}</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+        with colB:
+            st.markdown("""
+            <div style="
+                border:3px solid black;
+                border-radius:20px;
+                padding:15px;
+                font-size:22px;
+                font-weight:bold;">
+            """, unsafe_allow_html=True)
+
+            st.write(f"Mentah  : {mentah}")
+            st.write(f"Mengkal : {mengkal}")
+            st.write(f"Matang   : {matang}")
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
 # ==========================================================
 # ======================= MODE VIDEO =======================
 # ==========================================================
@@ -312,3 +302,4 @@ elif option == "Upload Video":
 
         cap.release()
         st.success("Video selesai diproses.")
+
