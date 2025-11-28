@@ -9,31 +9,31 @@ from io import BytesIO
 import base64
 import tempfile
 
-# -----------------------------
-# Konversi gambar ke base64
-# -----------------------------
+# =============================
+# Fungsi konversi gambar → base64
+# =============================
 def image_to_base64(image: Image.Image):
     buffered = BytesIO()
     image.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode()
 
-# -----------------------------
+# =============================
 # Konfigurasi halaman
-# -----------------------------
+# =============================
 st.set_page_config(page_title="Deteksi Buah Sawit", layout="wide")
 
-# -----------------------------
-# Load model YOLO
-# -----------------------------
+# =============================
+# Load Model YOLO
+# =============================
 @st.cache_resource
 def load_model():
-    return YOLO("best.pt")  # ganti sesuai model
+    return YOLO("best.pt")  # ganti sesuai model kamu
 
 model = load_model()
 
-# -----------------------------
+# =============================
 # Warna label
-# -----------------------------
+# =============================
 label_to_color = {
     "Masak": Color.RED,
     "Mengkal": Color.YELLOW,
@@ -41,16 +41,16 @@ label_to_color = {
 }
 label_annotator = LabelAnnotator()
 
-# -----------------------------
-# Fungsi anotasi deteksi (ANTI ERROR)
-# -----------------------------
+# =============================
+# Fungsi anotasi YOLO
+# =============================
 def draw_results(image, results):
     img = np.array(image.convert("RGB"))
     class_counts = Counter()
 
     for result in results:
         boxes = result.boxes
-        names = result.names  # mapping id → label
+        names = result.names
 
         xyxy = boxes.xyxy.cpu().numpy()
         class_ids = boxes.cls.cpu().numpy().astype(int)
@@ -58,9 +58,6 @@ def draw_results(image, results):
 
         for box, class_id, conf in zip(xyxy, class_ids, confidences):
 
-            # -----------------------
-            # FIX YOLOv12 → cegah KeyError
-            # -----------------------
             if class_id not in names:
                 print(f"[WARNING] Unknown class id: {class_id}")
                 continue
@@ -84,16 +81,34 @@ def draw_results(image, results):
 
     return Image.fromarray(img), class_counts
 
-# -----------------------------
+# =============================
+# Fungsi crop foto → square
+# =============================
+def crop_center_square(img):
+    width, height = img.size
+    min_dim = min(width, height)
+    left = (width - min_dim) / 2
+    top = (height - min_dim) / 2
+    right = (width + min_dim) / 2
+    bottom = (height + min_dim) / 2
+    return img.crop((left, top, right, bottom))
+
+# =============================
+# Load foto profil & crop
+# =============================
+profile_img = Image.open("foto.jpg")
+profile_img = crop_center_square(profile_img)
+
+# =============================
 # Sidebar
-# -----------------------------
+# =============================
 with st.sidebar:
     st.image("logo.png", width=150)
 
     st.markdown("<h4>Pilih metode input:</h4>", unsafe_allow_html=True)
     option = st.radio("", ["Upload Gambar", "Upload Video"], label_visibility="collapsed")
 
-    # Created by section ditempatkan di sidebar
+    # Created by section
     st.markdown(
         f"""
         <style>
@@ -107,8 +122,8 @@ with st.sidebar:
                 border-top: 1px solid #ccc;
             }}
             .created-by-img {{
-                width: 40px;
-                height: 40px;
+                width: 45px;
+                height: 45px;
                 border-radius: 50%;
                 border: 2px solid #444;
                 object-fit: cover;
@@ -119,6 +134,7 @@ with st.sidebar:
                 font-style: italic;
             }}
         </style>
+
         <div class="created-by-container">
             <img class="created-by-img" src="data:image/png;base64,{image_to_base64(profile_img)}" />
             <div class="created-by-text">Created by : Tsabit</div>
@@ -127,11 +143,9 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-
-
-# -----------------------------
-# Judul & Deskripsi
-# -----------------------------
+# =============================
+# Judul Halaman
+# =============================
 st.markdown("<h1 style='text-align:center;'>🌴 Deteksi Kematangan Buah Sawit</h1>", unsafe_allow_html=True)
 st.markdown("""
 <div style="text-align:center; font-size:16px; max-width:800px; margin:auto;">
@@ -140,9 +154,8 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-
 # ==========================================================
-# 🔹 MODE 1 — UPLOAD GAMBAR
+# MODE 1 — UPLOAD GAMBAR
 # ==========================================================
 if option == "Upload Gambar":
     uploaded_file = st.file_uploader("Unggah Gambar", type=["jpg", "jpeg", "png"])
@@ -165,9 +178,8 @@ if option == "Upload Gambar":
         result_img.save(buffered, format="PNG")
         st.download_button("⬇️ Download Hasil", buffered.getvalue(), "hasil_deteksi.png", "image/png")
 
-
 # ==========================================================
-# 🔹 MODE 2 — UPLOAD VIDEO
+# MODE 2 — UPLOAD VIDEO
 # ==========================================================
 elif option == "Upload Video":
     uploaded_video = st.file_uploader("Unggah Video", type=["mp4", "avi", "mov"])
@@ -178,7 +190,7 @@ elif option == "Upload Video":
 
         cap = cv2.VideoCapture(tfile.name)
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        out = cv2.VideoWriter('output.mp4', fourcc, 20.0, 
+        out = cv2.VideoWriter('output.mp4', fourcc, 20.0,
                               (int(cap.get(3)), int(cap.get(4))))
 
         stframe = st.empty()
