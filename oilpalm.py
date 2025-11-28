@@ -94,7 +94,7 @@ with st.sidebar:
     option = st.radio("", ["Upload Gambar", "Upload Video"], label_visibility="collapsed")
 
     # Created by section
-    profile_img = Image.open("foto1.jpg")
+    profile_img = Image.open("foto.jpg")
     st.markdown(
         f"""
         <style>
@@ -120,7 +120,7 @@ with st.sidebar:
         </style>
         <div class="created-by-container">
             <img class="created-by-img" src="data:image/png;base64,{image_to_base64(profile_img)}" />
-            <div class="created-by-text">Created by : hawa tercipta di dunia</div>
+            <div class="created-by-text">Created by : Tsabit</div>
         </div>
         """,
         unsafe_allow_html=True,
