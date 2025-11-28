@@ -264,22 +264,26 @@ if option == "Upload Gambar":
             )
 
         # ================== KOLOM KANAN (MENTAH-MENGKAL-MATANG) ==================
-        with colB:
-            st.markdown("""
-            <div style="
-                border:3px solid black;
-                border-radius:20px;
-                padding:20px;
-                font-size:22px;
-                font-weight:bold;
-                color:#333;">
-                
-                <p style="margin: 0 0 10px 0;">Mentah : """ + str(mentah) + """</p>
-                <p style="margin: 0 0 10px 0;">Mengkal : """ + str(mengkal) + """</p>
-                <p style="margin: 0;">Matang : """ + str(matang) + """</p>
-        
-            </div>
-            """, unsafe_allow_html=True)
+            with colB:
+                st.markdown(
+                    f"""
+                    <div style="
+                        border:3px solid black;
+                        border-radius:20px;
+                        padding:20px;
+                        font-size:22px;
+                        font-weight:bold;
+                        color:#333;
+                        line-height: 1.5;
+                    ">
+                        <div>Mentah : {mentah}</div>
+                        <div>Mengkal : {mengkal}</div>
+                        <div>Matang : {matang}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
 
 
 # ==========================================================
