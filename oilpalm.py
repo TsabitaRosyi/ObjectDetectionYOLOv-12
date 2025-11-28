@@ -88,7 +88,7 @@ def draw_results(image, results):
 # Sidebar
 # -----------------------------
 with st.sidebar:
-    st.image("logo-saraswanti.png", width=150)
+    st.image("logo.png", width=150)
 
     st.markdown("<h4>Pilih metode input:</h4>", unsafe_allow_html=True)
     option = st.radio("", ["Upload Gambar", "Upload Video"], label_visibility="collapsed")
