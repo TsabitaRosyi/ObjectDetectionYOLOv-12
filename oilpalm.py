@@ -178,6 +178,7 @@ if option == "Upload Gambar":
                 border:3px solid black;
                 padding:10px;
                 height:10px;
+                margin-bottom:15px;
                 display:flex;
                 align-items:center;
                 justify-content:center;
@@ -194,6 +195,7 @@ if option == "Upload Gambar":
                 border:3px solid black;
                 padding:10px;
                 height:10px;
+                margin-bottom:15px;
                 display:flex;
                 align-items:center;
                 justify-content:center;
