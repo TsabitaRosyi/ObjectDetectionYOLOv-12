@@ -126,10 +126,10 @@ with st.sidebar:
 # -----------------------------
 # Judul & Deskripsi
 # -----------------------------
-st.markdown("<h1 style='text-align:center;'>🌴 Deteksi dan Klasifikasi Kematangan Buah Sawit</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center;'>🌴 Deteksi Kematangan Buah Sawit</h1>", unsafe_allow_html=True)
 st.markdown("""
 <div style="text-align:center; font-size:16px; max-width:800px; margin:auto;">
-    Sistem ini menggunakan teknologi YOLO untuk mendeteksi dan mengklasifikasikan kematangan buah kelapa sawit 
+    Sistem ini menggunakan teknologi YOLOv12 untuk mendeteksi kematangan buah kelapa sawit 
     secara otomatis berdasarkan gambar atau video input. 
 </div>
 """, unsafe_allow_html=True)
