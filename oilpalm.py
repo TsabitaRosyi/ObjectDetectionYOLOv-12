@@ -59,13 +59,11 @@ def draw_results(image, results):
         for box, class_id, conf in zip(xyxy, class_ids, confidences):
 
             if class_id not in names:
-                print(f"[WARNING] Unknown class id: {class_id}")
                 continue
 
             class_name = names[class_id]
             label = f"{class_name}: {conf:.2f}"
             color = label_to_color.get(class_name, Color.WHITE)
-
             class_counts[class_name] += 1
 
             box_annotator = BoxAnnotator(color=color)
@@ -82,7 +80,7 @@ def draw_results(image, results):
     return Image.fromarray(img), class_counts
 
 # =============================
-# Fungsi crop foto → square
+# Fungsi crop foto profil
 # =============================
 def crop_center_square(img):
     width, height = img.size
@@ -94,7 +92,7 @@ def crop_center_square(img):
     return img.crop((left, top, right, bottom))
 
 # =============================
-# Load foto profil & crop
+# Load foto profil
 # =============================
 profile_img = Image.open("foto.jpg")
 profile_img = crop_center_square(profile_img)
@@ -104,18 +102,16 @@ profile_img = crop_center_square(profile_img)
 # =============================
 with st.sidebar:
     st.image("logo.png", width=150)
-
     st.markdown("<h4>Pilih metode input:</h4>", unsafe_allow_html=True)
     option = st.radio("", ["Upload Gambar", "Upload Video"], label_visibility="collapsed")
 
-    # Created by section
+    # Created by
     st.markdown(
         f"""
         <style>
             .created-by-container {{
                 display: flex;
                 align-items: center;
-                justify-content: flex-start;
                 gap: 10px;
                 margin-top: 20px;
                 padding-top: 10px;
@@ -147,6 +143,7 @@ with st.sidebar:
 # Judul Halaman
 # =============================
 st.markdown("<h1 style='text-align:center;'>🌴 Deteksi Kematangan Buah Sawit</h1>", unsafe_allow_html=True)
+
 st.markdown("""
 <div style="text-align:center; font-size:16px; max-width:800px; margin:auto;">
     Sistem ini menggunakan teknologi YOLOv12 untuk mendeteksi kematangan buah kelapa sawit 
@@ -154,11 +151,14 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+
 # ==========================================================
-# MODE 1 — UPLOAD GAMBAR
+# ======================= MODE GAMBAR ======================
 # ==========================================================
 if option == "Upload Gambar":
-    uploaded_file = st.file_uploader("Unggah Gambar", type=["jpg", "jpeg", "png"])
+
+    uploaded_file = st.file_uploader("Unggah Gambar", type=["jpg","jpeg","png"])
+
     if uploaded_file:
         image = Image.open(uploaded_file)
 
@@ -166,33 +166,124 @@ if option == "Upload Gambar":
             results = model(image)
             result_img, class_counts = draw_results(image, results)
 
-        col1, col2 = st.columns(2)
-        col1.image(image, caption="Gambar Input", use_container_width=True)
-        col2.image(result_img, caption="Hasil Deteksi", use_container_width=True)
+        # ======================================================
+        # UI RAPI — AREA INPUT & OUTPUT
+        # ======================================================
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_input, col_output = st.columns(2)
 
-        st.subheader("Jumlah Objek Terdeteksi:")
-        for name, count in class_counts.items():
-            st.write(f"- **{name}**: {count}")
+        with col_input:
+            st.markdown("""
+            <div style="
+                border:3px solid black;
+                padding:10px;
+                height:430px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-weight:bold;
+                font-size:20px;">
+                AREA INPUT FOTO
+            </div>
+            """, unsafe_allow_html=True)
+            st.image(image, use_container_width=True)
 
-        buffered = BytesIO()
-        result_img.save(buffered, format="PNG")
-        st.download_button("⬇️ Download Hasil", buffered.getvalue(), "hasil_deteksi.png", "image/png")
+        with col_output:
+            st.markdown("""
+            <div style="
+                border:3px solid black;
+                padding:10px;
+                height:430px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-weight:bold;
+                font-size:20px;">
+                AREA HASIL FOTO
+            </div>
+            """, unsafe_allow_html=True)
+            st.image(result_img, use_container_width=True)
+
+        # ==================== DOWNLOAD BUTTON ====================
+        st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
+
+        buf = BytesIO()
+        result_img.save(buf, format="PNG")
+
+        st.download_button(
+            "⬇️ Download Hasil Deteksi",
+            buf.getvalue(),
+            "hasil_deteksi.png",
+            "image/png"
+        )
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # ==================== REKAP DETEKSI ======================
+        total = sum(class_counts.values())
+        mentah = class_counts.get("Mentah", 0)
+        mengkal = class_counts.get("Mengkal", 0)
+        masak = class_counts.get("Masak", 0)
+
+        st.markdown("""
+        <div style="
+            margin-top: 20px;
+            border:3px solid black;
+            border-radius:20px;
+            padding:20px;">
+        """, unsafe_allow_html=True)
+
+        colA, colB = st.columns([1,2])
+
+        with colA:
+            st.markdown("""
+            <div style="
+                border:3px solid black;
+                border-radius:20px;
+                padding:10px;
+                text-align:center;
+                font-weight:bold;">
+                Jumlah Total Deteksi
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown(
+                f"<h1 style='text-align:center; font-size:60px; margin-top:10px;'>{total}</h1>",
+                unsafe_allow_html=True,
+            )
+
+        with colB:
+            st.markdown("""
+            <div style="
+                border:3px solid black;
+                border-radius:20px;
+                padding:15px;
+                font-size:22px;
+                font-weight:bold;">
+            """, unsafe_allow_html=True)
+
+            st.write(f"Mentah  : {mentah}")
+            st.write(f"Mengkal : {mengkal}")
+            st.write(f"Masak   : {masak}")
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ==========================================================
-# MODE 2 — UPLOAD VIDEO
+# ======================= MODE VIDEO =======================
 # ==========================================================
 elif option == "Upload Video":
-    uploaded_video = st.file_uploader("Unggah Video", type=["mp4", "avi", "mov"])
+
+    uploaded_video = st.file_uploader("Unggah Video", type=["mp4","avi","mov"])
+
     if uploaded_video:
 
         tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.write(uploaded_video.read())
 
         cap = cv2.VideoCapture(tfile.name)
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        out = cv2.VideoWriter('output.mp4', fourcc, 20.0,
-                              (int(cap.get(3)), int(cap.get(4))))
-
         stframe = st.empty()
 
         with st.spinner("🔍 Memproses video..."):
@@ -202,19 +293,10 @@ elif option == "Upload Video":
                     break
 
                 results = model(frame)
+                annotated, _ = draw_results(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)), results)
+                annotated_bgr = cv2.cvtColor(np.array(annotated), cv2.COLOR_RGB2BGR)
 
-                annotated_frame, _ = draw_results(
-                    Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
-                    results
-                )
-
-                frame_bgr = cv2.cvtColor(np.array(annotated_frame), cv2.COLOR_RGB2BGR)
-
-                out.write(frame_bgr)
-                stframe.image(frame_bgr, channels="BGR", use_container_width=True)
+                stframe.image(annotated_bgr, channels="BGR", use_container_width=True)
 
         cap.release()
-        out.release()
-
-        with open("output.mp4", "rb") as f:
-            st.download_button("⬇️ Download Video Hasil Deteksi", f, "hasil_deteksi.mp4")
+        st.success("Video selesai diproses.")
