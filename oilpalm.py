@@ -234,13 +234,13 @@ if option == "Upload Gambar":
         mengkal = class_counts.get("mengkal", 0)
         matang = class_counts.get("matang", 0)
 
-        st.markdown("""
-        <div style="
-            margin-top: 20px;
-            border:3px solid black;
-            border-radius:20px;
-            padding:20px;">
-        """, unsafe_allow_html=True)
+        # st.markdown("""
+        # <div style="
+        #     margin-top: 20px;
+        #     border:3px solid black;
+        #     border-radius:20px;
+        #     padding:20px;">
+        # """, unsafe_allow_html=True)
 
         colA, colB = st.columns([1,2])
 
