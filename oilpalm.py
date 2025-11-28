@@ -35,7 +35,7 @@ model = load_model()
 # Warna label
 # =============================
 label_to_color = {
-    "Masak": Color.RED,
+    "Matang": Color.RED,
     "Mengkal": Color.YELLOW,
     "Mentah": Color.BLACK
 }
@@ -223,7 +223,7 @@ if option == "Upload Gambar":
         total = sum(class_counts.values())
         mentah = class_counts.get("Mentah", 0)
         mengkal = class_counts.get("Mengkal", 0)
-        masak = class_counts.get("Masak", 0)
+        matang = class_counts.get("Matang", 0)
 
         st.markdown("""
         <div style="
@@ -264,7 +264,7 @@ if option == "Upload Gambar":
 
             st.write(f"Mentah  : {mentah}")
             st.write(f"Mengkal : {mengkal}")
-            st.write(f"Masak   : {masak}")
+            st.write(f"Matang   : {matang}")
 
             st.markdown("</div>", unsafe_allow_html=True)
 
