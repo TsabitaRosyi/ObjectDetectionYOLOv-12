@@ -319,9 +319,9 @@ if option == "Upload Gambar":
             title="Persentase Deteksi per Kategori",
             color="Kategori",
             color_discrete_map={
-                "Mentah": "#E74C3C"    # Merah
+                "Mentah": "#E74C3C",    # Merah
                 "Mengkal": "#F1C40F",  # Kuning
-                "Matang": ""#27AE60",   # Hijau
+                "Matang": "#27AE60"   # Hijau
             },
             hole=0.3   # donut kecil biar lebih bagus
         )
