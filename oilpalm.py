@@ -9,7 +9,6 @@ from io import BytesIO
 import base64
 import tempfile
 import plotly.express as px  # ==== TAMBAHAN BARU UNTUK DIAGRAM ====
-pip install plotly
 
 
 
