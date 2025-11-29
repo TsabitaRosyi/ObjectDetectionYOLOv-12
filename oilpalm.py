@@ -288,6 +288,41 @@ if option == "Upload Gambar":
 
         st.plotly_chart(fig, use_container_width=True)
 
+# ===================== STATUS PANEN ======================
+st.markdown("<br><h4>🌾 Status Kesiapan Panen</h4>", unsafe_allow_html=True)
+
+# Logika menentukan status panen
+if matang > 0:
+    status_text = "✔ <b>Siap Dipanen</b> (Terdapat buah Matang)"
+    status_color = "#1FA63A"  # Hijau
+elif mengkal > 0:
+    status_text = "⚠ <b>Belum Siap</b> (Masih Mengkal)"
+    status_color = "#E0A800"  # Kuning
+else:
+    status_text = "❌ <b>Tidak Siap Dipanen</b> (Hanya buah Mentah)"
+    status_color = "#C0392B"  # Merah
+
+# Kotak status
+st.markdown(
+    f"""
+    <div style="
+        margin-top:15px;
+        padding:20px;
+        border-radius:15px;
+        border:3px solid {status_color};
+        background-color:#FAFAFA;
+        font-size:22px;
+        font-weight:bold;
+        color:{status_color};
+        text-align:center;
+    ">
+        {status_text}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
 
 # ==========================================================
 # ======================= MODE VIDEO =======================
