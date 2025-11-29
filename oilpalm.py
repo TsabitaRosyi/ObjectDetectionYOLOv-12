@@ -8,6 +8,7 @@ from supervision import BoxAnnotator, LabelAnnotator, Color, Detections
 from io import BytesIO
 import base64
 import tempfile
+import matplotlib.pyplot as plt
 
 # =============================
 # Fungsi konversi gambar → base64
@@ -42,7 +43,7 @@ label_to_color = {
 label_annotator = LabelAnnotator()
 
 # =============================
-# Fungsi anotasi YOLO (SUDAH DIPERBAIKI)
+# Fungsi anotasi YOLO 
 # =============================
 def draw_results(image, results):
     img = np.array(image.convert("RGB"))
@@ -56,20 +57,13 @@ def draw_results(image, results):
         class_ids = boxes.cls.cpu().numpy().astype(int)
         confidences = boxes.conf.cpu().numpy()
 
-        # ===== DEBUG: tampilkan nama label dari YOLO =====
-        # st.write("DEBUG LABEL YOLO:", [names[c] for c in class_ids])
-
         for box, class_id, conf in zip(xyxy, class_ids, confidences):
 
-            if class_id not in names:
-                continue
-
-            class_name = names[class_id].strip().lower()   # NORMALISASI
+            class_name = names[class_id].strip().lower()
             label = f"{class_name}: {conf:.2f}"
 
             color = label_to_color.get(class_name, Color.WHITE)
-
-            class_counts[class_name] += 1  # pakai lowercase
+            class_counts[class_name] += 1
 
             box_annotator = BoxAnnotator(color=color)
 
@@ -84,9 +78,8 @@ def draw_results(image, results):
 
     return Image.fromarray(img), class_counts
 
-
 # =============================
-# Fungsi crop foto profil
+# Crop foto profil
 # =============================
 def crop_center_square(img):
     width, height = img.size
@@ -111,7 +104,7 @@ with st.sidebar:
     st.markdown("<h4>Pilih metode input:</h4>", unsafe_allow_html=True)
     option = st.radio("", ["Upload Gambar", "Upload Video"], label_visibility="collapsed")
 
-    # Created by
+    # Created by footer
     st.markdown(
         f"""
         <style>
@@ -130,16 +123,13 @@ with st.sidebar:
                 border: 2px solid #444;
                 object-fit: cover;
             }}
-            .created-by-text {{
-                font-size: 14px;
-                color: #555;
-                font-style: italic;
-            }}
         </style>
 
         <div class="created-by-container">
             <img class="created-by-img" src="data:image/png;base64,{image_to_base64(profile_img)}" />
-            <div class="created-by-text">Created by : Tsabit</div>
+            <div style="font-size:14px; color:#555; font-style:italic;">
+                Created by : Tsabit
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -152,11 +142,10 @@ st.markdown("<h1 style='text-align:center;'>🌴 Deteksi Kematangan Buah Sawit</
 
 st.markdown("""
 <div style="text-align:center; font-size:16px; max-width:800px; margin:auto;">
-    Sistem ini menggunakan teknologi YOLOv12 untuk mendeteksi kematangan buah kelapa sawit 
-    secara otomatis berdasarkan gambar atau video input. 
+    Sistem menggunakan YOLOv12 untuk mendeteksi tingkat kematangan buah sawit 
+    secara otomatis berdasarkan gambar atau video.
 </div>
 """, unsafe_allow_html=True)
-
 
 # ==========================================================
 # ======================= MODE GAMBAR ======================
@@ -180,16 +169,9 @@ if option == "Upload Gambar":
 
         with col_input:
             st.markdown("""
-            <div style="
-                border:3px solid black;
-                padding:10px;
-                height:10px;
-                margin-bottom:15px;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                font-weight:bold;
-                font-size:20px;">
+            <div style="border:3px solid black; padding:10px; height:10px;
+                        margin-bottom:15px; display:flex; align-items:center;
+                        justify-content:center; font-weight:bold; font-size:20px;">
                 AREA INPUT FOTO
             </div>
             """, unsafe_allow_html=True)
@@ -197,24 +179,15 @@ if option == "Upload Gambar":
 
         with col_output:
             st.markdown("""
-            <div style="
-                border:3px solid black;
-                padding:10px;
-                height:10px;
-                margin-bottom:15px;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                font-weight:bold;
-                font-size:20px;">
+            <div style="border:3px solid black; padding:10px; height:10px;
+                        margin-bottom:15px; display:flex; align-items:center;
+                        justify-content:center; font-weight:bold; font-size:20px;">
                 AREA HASIL FOTO
             </div>
             """, unsafe_allow_html=True)
             st.image(result_img, use_container_width=True)
 
         # ==================== DOWNLOAD BUTTON ====================
-        st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
-
         buf = BytesIO()
         result_img.save(buf, format="PNG")
 
@@ -225,9 +198,7 @@ if option == "Upload Gambar":
             "image/png"
         )
 
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        # ==================== REKAP DETEKSI (SUDAH DIBENERKAN) ======================
+        # ==================== REKAP DETEKSI ======================
         total = sum(class_counts.values())
 
         mentah = class_counts.get("mentah", 0)
@@ -235,24 +206,17 @@ if option == "Upload Gambar":
         matang = class_counts.get("matang", 0)
 
         st.markdown("""
-        <div style="
-            margin-top: 20px;
-            border:3px solid black;
-            border-radius:20px;
-            padding:20px;">
+        <div style="margin-top: 20px; border:3px solid black; border-radius:20px; padding:20px;">
         """, unsafe_allow_html=True)
 
         colA, colB = st.columns([1,2])
 
+        # ==================== TOTAL ====================
         with colA:
             st.markdown("""
-            <div style="
-                border:3px solid black;
-                border-radius:20px;
-                padding:10px;
-                text-align:center;
-                font-weight:bold;">
-                Jumlah Total Deteksi
+            <div style="border:3px solid black; border-radius:20px; padding:10px; 
+                        text-align:center; font-weight:bold;">
+                Total Deteksi
             </div>
             """, unsafe_allow_html=True)
 
@@ -261,23 +225,62 @@ if option == "Upload Gambar":
                 unsafe_allow_html=True,
             )
 
+        # ==================== DETAIL ====================
         with colB:
             st.markdown("""
-            <div style="
-                border:3px solid black;
-                border-radius:20px;
-                padding:15px;
-                font-size:22px;
-                font-weight:bold;">
+            <div style="border:3px solid black; border-radius:20px; padding:15px; 
+                        font-size:22px; font-weight:bold;">
             """, unsafe_allow_html=True)
 
             st.write(f"Mentah  : {mentah}")
             st.write(f"Mengkal : {mengkal}")
             st.write(f"Matang  : {matang}")
 
+            # ==================== Persentase ====================
+            if total > 0:
+                st.markdown("<br><b>Persentase:</b>", unsafe_allow_html=True)
+                st.write(f"Mentah  : {mentah/total*100:.1f}%")
+                st.write(f"Mengkal : {mengkal/total*100:.1f}%")
+                st.write(f"Matang  : {matang/total*100:.1f}%")
+
             st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
+
+        # ==================== PIE CHART ====================
+        if total > 0:
+            fig, ax = plt.subplots()
+            labels = ["Mentah", "Mengkal", "Matang"]
+            vals = [mentah, mengkal, matang]
+
+            ax.pie(vals, labels=labels, autopct="%1.1f%%")
+            ax.set_title("Distribusi Kematangan")
+            st.pyplot(fig)
+
+        # ==================== REKOMENDASI PANEN ====================
+        if total > 0:
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            if matang > (total * 0.5):
+                status = "SIAP PANEN ✅"
+                color = "green"
+            elif mengkal > (total * 0.5):
+                status = "DALAM PROSES — TUNGGU BEBERAPA HARI ⏳"
+                color = "orange"
+            else:
+                status = "BELUM SIAP PANEN ❌"
+                color = "red"
+
+            st.markdown(
+                f"""
+                <div style="border:3px solid {color}; padding:20px;
+                            text-align:center; border-radius:15px;
+                            font-size:22px; font-weight:bold; color:{color};">
+                    {status}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 
 # ==========================================================
