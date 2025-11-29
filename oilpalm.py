@@ -304,23 +304,32 @@ if option == "Upload Gambar":
         )
 
 
-        # ===================== DIAGRAM KECIL (BAR CHART) ======================
-        st.markdown("<br><h4>📊 Diagram Deteksi (Ukuran Normal)</h4>", unsafe_allow_html=True)
-
+        # ===================== DIAGRAM KECIL (PIE CHART) ======================
+        st.markdown("<br><h4>📊 Diagram Deteksi (Pie Chart)</h4>", unsafe_allow_html=True)
+        
         data_chart = {
             "Kategori": ["Mentah", "Mengkal", "Matang"],
             "Jumlah": [mentah, mengkal, matang]
         }
-
-        fig = px.bar(
+        
+        fig = px.pie(
             data_chart,
-            x="Kategori",
-            y="Jumlah",
-            title="Jumlah Deteksi per Kategori",
-            height=320,  # kecil, tidak besar ✔
+            names="Kategori",
+            values="Jumlah",
+            title="Persentase Deteksi per Kategori",
+            color="Kategori",
+            color_discrete_map={
+                "Mentah": "#27AE60",   # Hijau
+                "Mengkal": "#F1C40F",  # Kuning
+                "Matang": "#E74C3C"    # Merah
+            },
+            hole=0.3   # donut kecil biar lebih bagus
         )
-
+        
+        fig.update_layout(height=320)  # ukuran pie chart normal
+        
         st.plotly_chart(fig, use_container_width=True)
+
 
 
 
