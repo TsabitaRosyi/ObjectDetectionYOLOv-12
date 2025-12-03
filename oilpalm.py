@@ -186,7 +186,6 @@ if option == "Upload Gambar":
         with col_input:
             st.markdown("""
             <div style="
-                border:3px solid black;
                 padding:10px;
                 height:10px;
                 margin-bottom:15px;
@@ -203,7 +202,6 @@ if option == "Upload Gambar":
         with col_output:
             st.markdown("""
             <div style="
-                border:3px solid black;
                 padding:10px;
                 height:10px;
                 margin-bottom:15px;
