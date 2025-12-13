@@ -337,14 +337,25 @@ if option == "Upload Gambar":
 # ==========================================================
 elif option == "Upload Video":
 
-    uploaded_video = st.file_uploader("Unggah Video", type=["mp4","avi","mov"])
+    uploaded_video = st.file_uploader("Unggah Video", type=["mp4", "avi", "mov"])
 
     if uploaded_video:
 
+        # Simpan video input sementara
         tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.write(uploaded_video.read())
 
         cap = cv2.VideoCapture(tfile.name)
+
+        width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps    = cap.get(cv2.CAP_PROP_FPS)
+
+        # File output video
+        output_path = "hasil_deteksi_video.mp4"
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
         stframe = st.empty()
 
         with st.spinner("🔍 Memproses video..."):
@@ -354,10 +365,29 @@ elif option == "Upload Video":
                     break
 
                 results = model(frame)
-                annotated, _ = draw_results(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)), results)
-                annotated_bgr = cv2.cvtColor(np.array(annotated), cv2.COLOR_RGB2BGR)
 
+                annotated_img, _ = draw_results(
+                    Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
+                    results
+                )
+
+                annotated_bgr = cv2.cvtColor(
+                    np.array(annotated_img), cv2.COLOR_RGB2BGR
+                )
+
+                out.write(annotated_bgr)
                 stframe.image(annotated_bgr, channels="BGR", use_container_width=True)
 
         cap.release()
-        st.success("Video selesai diproses.")
+        out.release()
+
+        st.success("✅ Video selesai diproses!")
+
+        # ================= DOWNLOAD VIDEO =================
+        with open(output_path, "rb") as f:
+            st.download_button(
+                label="⬇️ Download Video Hasil Deteksi",
+                data=f,
+                file_name="hasil_deteksi_sawit.mp4",
+                mime="video/mp4"
+            )
